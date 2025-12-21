@@ -9,7 +9,7 @@
 static constexpr int PIN_MAX_CS   = 22;  // 
 static constexpr int PIN_MAX_SCK  = 21;  // 
 static constexpr int PIN_MAX_SO   = 35;  // 
-
+static constexpr int PIN_EN = 4;
 static void max6675_begin()
 {
   pinMode(PIN_MAX_CS, OUTPUT);
@@ -49,21 +49,21 @@ static float max6675_raw_to_c(uint16_t v)
 /* ===================== GT911 reset (0x5D) ===================== */
 static void gt911_reset_0x5D()
 {
-  constexpr int TP_INT = 21;
+  //constexpr int TP_INT = 21;
   constexpr int TP_RST = 25;
 
-  pinMode(TP_INT, OUTPUT);
+  //pinMode(TP_INT, OUTPUT);
   pinMode(TP_RST, OUTPUT);
 
-  digitalWrite(TP_INT, HIGH); // => 0x5D
-  delay(2);
+  //digitalWrite(TP_INT, HIGH); // => 0x5D
+  //delay(2);
 
   digitalWrite(TP_RST, LOW);
   delay(20);
   digitalWrite(TP_RST, HIGH);
   delay(120);
 
-  pinMode(TP_INT, INPUT);
+  //pinMode(TP_INT, INPUT);
 }
 
 /* ===================== LVGL display glue ===================== */
@@ -118,9 +118,8 @@ static int32_t current_temp = 0;
 static void motor_set()
 {
   digitalWrite(MOTOR_PIN, HIGH);
-  delay(10);
+  delayMicroseconds(3);
   digitalWrite(MOTOR_PIN, LOW);
-  delay(10);
   
 }
 
@@ -155,7 +154,14 @@ static void motor_btn_event_cb(lv_event_t * e)
 
   Serial.println("motor_btn_event_cb...");
   motor_on = !motor_on;
-
+  if(motor_on == true)
+  {
+    digitalWrite(PIN_EN,LOW);
+  }
+  else
+  {
+    digitalWrite(PIN_EN,HIGH);
+  }
   lv_obj_set_style_bg_color(motor_btn,
     motor_on ? lv_palette_main(LV_PALETTE_GREEN) : lv_palette_main(LV_PALETTE_RED),
     0);
@@ -339,7 +345,9 @@ void setup()
 
   // Sortie moteur
   pinMode(MOTOR_PIN, OUTPUT);
+  digitalWrite(MOTOR_PIN,LOW);
 
+  
   // Init MAX6675 (bitbang)
   max6675_begin();
 
@@ -347,6 +355,9 @@ void setup()
   create_ui();
 
   Serial.println("Interface créée!");
+  // Sortie moteur
+  pinMode(PIN_EN, OUTPUT);
+  digitalWrite(PIN_EN,HIGH);
 }
 
 void loop()
@@ -374,9 +385,13 @@ void loop()
       lv_label_set_text(temp_label, "NC");
     }
   }
-  if(now - last2 >= 50) {             
-    last2 = now;
-    motor_set();
+
+  if(motor_on == true)
+  {
+    if(now - last2 >= 50) {             
+      last2 = now;
+      motor_set();
+    }
   }
   delay(5);
 
