@@ -7,6 +7,7 @@ extern lv_display_t * g_disp;
 extern lv_obj_t * motor_btn;
 extern lv_obj_t * temp_label;
 extern bool motor_on;
+extern uint32_t cur_timer;
 static int32_t current_temp = 0;
 static constexpr int MOTOR_PIN = 26;
 
@@ -54,7 +55,11 @@ void loop()
 
     uint16_t raw = max6675_read_raw();
     float tc = max6675_raw_to_c(raw);
-
+    if(motor_on == true)
+    {
+      cur_timer++;
+      set_timer();
+    }
     if(!isnan(tc)) {
       current_temp = (int32_t)lroundf(tc);
       if(current_temp < 0) current_temp = 0;

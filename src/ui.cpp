@@ -8,9 +8,11 @@ static lv_display_t * g_disp = nullptr;
 static lv_obj_t * scale_obj = nullptr;
 static lv_obj_t * needle_img = nullptr;
 lv_obj_t * temp_label = nullptr;
+lv_obj_t * timer_label = nullptr;
 static lv_obj_t * motor_btn = nullptr;
 static lv_obj_t * motor_btn_label = nullptr;
 bool motor_on = false;
+uint32_t cur_timer = 0;
 
 static void motor_btn_event_cb(lv_event_t * e)
 {
@@ -25,6 +27,7 @@ static void motor_btn_event_cb(lv_event_t * e)
   else
   {
     digitalWrite(PIN_EN,HIGH);
+    cur_timer = 0;
   }
   lv_obj_set_style_bg_color(motor_btn,
     motor_on ? lv_palette_main(LV_PALETTE_GREEN) : lv_palette_main(LV_PALETTE_RED),
@@ -120,6 +123,12 @@ void set_temperature(int32_t value_celsius)
   char buf[16];
   snprintf(buf, sizeof(buf), "%ld°C", (long)value_celsius);
   lv_label_set_text(temp_label, buf);
+}
+void set_timer()
+{
+  char buf[16];
+  snprintf(buf, sizeof(buf), "%lds", cur_timer);
+  lv_label_set_text(timer_label, buf);
 }
 void create_ui()
 {
@@ -236,11 +245,16 @@ void create_ui()
   lv_obj_align(temp_label, LV_ALIGN_CENTER, 0, 80);
   lv_label_set_text(temp_label, "0°C");
 
+  // Label timer (police 24)
+  timer_label = lv_label_create(lv_screen_active());
+  lv_obj_align(timer_label, LV_ALIGN_CENTER, 0, 120);
+  lv_label_set_text(timer_label, "0s");
+
   static lv_style_t temp_style;
   lv_style_init(&temp_style);
   lv_style_set_text_font(&temp_style, &lv_font_montserrat_24);
   lv_obj_add_style(temp_label, &temp_style, 0);
-
+  lv_obj_add_style(timer_label, &temp_style, 0); 
   // Bouton moteur
   motor_btn = lv_btn_create(lv_screen_active());
   lv_obj_set_size(motor_btn, 200, 50);

@@ -7,6 +7,7 @@
 void lvgl_setup();
 void create_ui();
 void set_temperature(int32_t value_celsius);
+void set_timer();
 /*
   ESP32-3248S035C (typique)
   LCD (ST7796 SPI):  SCK=14 MOSI=13 MISO=12 DC=2 CS=15 BL=27
